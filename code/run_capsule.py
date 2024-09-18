@@ -6,8 +6,9 @@ import hashlib
 import itertools
 import json
 import glob
-from tqdm import tqdm
 import logging
+import numpy as np
+import os
 
 from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB
 
@@ -64,47 +65,72 @@ def get_all_analysis_specs():
     ]
     return analysis_specs
 
-def generate_job_json():
+def get_new_jobs() -> list:
+    """Based on all nwb files, analysis specs, and existing jobs, generate new jobs.
+    
+    Returns:
+        list: list of new_job_dicts
+    """
     nwbs = get_all_nwbs(LOCAL_NWB_ROOT)
     analysis_specs = get_all_analysis_specs()
 
-    n_already_exists = 0
     all_job_dicts = []
 
+    # -- Generate all job_dicts by combining nwb and analysis_spec --
     for nwb, analysis_spec in itertools.product(nwbs, analysis_specs):
-        # -- Generate job_dict and compute hash --
         job_dict = {
             "nwb_name": nwb,
             "analysis_spec": analysis_spec,
         }
         job_hash = hash_dict(json.dumps(job_dict))
         job_dict["job_hash"] = job_hash  # Add hash to job_dict
-        
         all_job_dicts.append(job_dict)
         
-    # -- Batch check if job_hash already exists on docDB --
+    # -- Batch check if job already exists on docDB --
     new_job_dicts = batch_get_new_jobs(all_job_dicts)
-    
-    if not new_job_dicts:
-        logger.info("No new jobs to add.")
-        return
-        
-    # -- Batch add new jobs to docDB --
-    batch_add_jobs_to_docDB(new_job_dicts)
-    
-    # -- Trigger computation in the pipeline --
-    for job_dict in new_job_dicts:
-        with open(f"/root/capsule/results/{job_dict['job_hash']}.json", "w") as f:
-            json.dump(job_dict, f, indent=4)
-
+    n_existing = len(all_job_dicts) - len(new_job_dicts)
     logger.info(
-        f"{len(new_job_dicts)} / {len(all_job_dicts)} new jobs added."
+        f"Found {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs; {n_existing} already existed."
     )
+    return new_job_dicts
 
+def assign_jobs(job_dicts, n_workers):
+    """Assign jobs to pipeline workers by putting job jsons to folders under /root/capsule/results/
+    
+    Parameters:
+        job_dicts (list): list of job_dicts
+        n_workers (int): number of workers in the pipeline (specified in CO pipeline)
+    """
+    n_jobs = len(job_dicts)
+    n_workers = np.min([n_workers, n_jobs])
+    jobs_for_each_worker = np.array_split(job_dicts, n_workers)
+    for n_worker, jobs_this in enumerate(jobs_for_each_worker):
+        os.makedirs(f"/root/capsule/results/{n_worker}", exist_ok=True)
+        for job_dict in jobs_this:
+            with open(
+                f"/root/capsule/results/{n_worker}/{job_dict['job_hash']}.json", "w"
+            ) as f:
+                json.dump(job_dict, f, indent=4)
+    logger.info(f"Assigned {n_jobs} jobs to {n_workers} workers.")
 
 def hash_dict(job_dict):
     return hashlib.sha256(job_dict.encode("utf-8")).hexdigest()
 
 
 if __name__ == "__main__":
-    generate_job_json()
+    # -- Get all new jobs --
+    new_job_dicts = get_new_jobs()
+    
+    if not new_job_dicts:
+        logger.info("No new jobs to assign.")
+        exit()
+
+    # -- Batch add new jobs to docDB --
+    batch_add_jobs_to_docDB(new_job_dicts)
+    
+    # -- Trigger computation in the pipeline --
+    try:
+        n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
+    except:
+        n_workers = 10  # Default number of workers
+    assign_jobs(new_job_dicts, n_workers)
