@@ -45,24 +45,6 @@ def get_all_analysis_specs():
                 },
             },
         },
-        {
-            "analysis_name": "MLE fitting",
-            "analysis_ver": "first version @ 0.10.0",
-            "analysis_libs_to_track_ver": ["aind_dynamic_foraging_models"],
-            "analysis_args": {
-                "agent_class": "ForagerQLearning",
-                "agent_kwargs": {
-                    "number_of_learning_rate": 1,
-                    "number_of_forget_rate": 1,
-                    "choice_kernel": "one_step",
-                    "action_selection": "softmax",
-                },
-                "fit_kwargs": {
-                    "DE_kwargs": {"polish": True, "seed": 42},
-                    "k_fold_cross_validation": 2,
-                },
-            },
-        },
     ]
     return analysis_specs
 
