@@ -12,14 +12,14 @@ import os
 
 from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB, get_pending_jobs
 
-LOCAL_NWB_ROOT = "/root/capsule/data/foraging_nwb_bonsai"
+LOCAL_NWB_ROOT = "../data/foraging_nwb_bonsai"
 
 logger = logging.getLogger()
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
     handlers=[
-        logging.FileHandler("/root/capsule/results/run_capsule.log"),
+        logging.FileHandler("../results/run_capsule.log"),
         logging.StreamHandler(),
     ],
 )
@@ -88,10 +88,10 @@ def assign_jobs(job_dicts, n_workers):
     n_workers = np.min([n_workers, n_jobs])
     jobs_for_each_worker = np.array_split(job_dicts, n_workers)
     for n_worker, jobs_this in enumerate(jobs_for_each_worker):
-        os.makedirs(f"/root/capsule/results/{n_worker}", exist_ok=True)
+        os.makedirs(f"../results/{n_worker}", exist_ok=True)
         for job_dict in jobs_this:
             with open(
-                f"/root/capsule/results/{n_worker}/{job_dict['job_hash']}.json", "w"
+                f"../results/{n_worker}/{job_dict['job_hash']}.json", "w"
             ) as f:
                 json.dump(job_dict, f, indent=4)
     logger.info(f"Assigned {n_jobs} jobs to {n_workers} workers.")
