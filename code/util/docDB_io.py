@@ -7,24 +7,23 @@ credentials.collection = "job_manager"
 
 logger = logging.getLogger(__name__)
 
-def check_if_job_exists(job_hash) -> bool:
-    """Check if job_hash exists in the database
-
-    Parameters
-    ----------
-    job_hash : _type_
-        _description_
-    
-    Returns
-    -------
-    bool
+def batch_get_new_jobs(job_dicts: list) -> list:
+    """Remove existing jobs from job_dicts
     """
+    job_hashs = [job_dict["job_hash"] for job_dict in job_dicts]
+
     with DocumentDbSSHClient(credentials) as client:
-        response = client.collection.find({"job_hash": job_hash})
+        matched_records = client.collection.find(
+            {"job_hash": {"$in": job_hashs}}, {"job_hash": 1, "_id": 0}
+        )
+        matched_job_hashs = [record["job_hash"] for record in matched_records]
+        
+    return [
+        job_dict for job_dict in job_dicts 
+        if job_dict["job_hash"] not in matched_job_hashs
+    ]
 
-    return response is not None
-
-def add_jobs_to_docDB(job_dicts):
+def batch_add_jobs_to_docDB(job_dicts):
     """Add all jobs in job_list to the database
     """
     with DocumentDbSSHClient(credentials) as client:
