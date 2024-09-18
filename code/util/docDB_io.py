@@ -7,6 +7,14 @@ credentials.collection = "job_manager"
 
 logger = logging.getLogger(__name__)
 
+def get_pending_jobs() -> list:
+    """Get all pending jobs from the database"""
+    with DocumentDbSSHClient(credentials) as client:
+        pending_jobs = list(
+            client.collection.find({"status": "pending"}, {"job_dict": 1, "_id": 0})
+        )
+    return pending_jobs
+
 def batch_get_new_jobs(job_dicts: list) -> list:
     """Remove existing jobs from job_dicts
     """

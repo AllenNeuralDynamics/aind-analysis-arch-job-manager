@@ -10,7 +10,7 @@ import logging
 import numpy as np
 import os
 
-from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB
+from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB, get_pending_jobs
 
 LOCAL_NWB_ROOT = "/root/capsule/data/foraging_nwb_bonsai"
 
@@ -121,16 +121,22 @@ if __name__ == "__main__":
     # -- Get all new jobs --
     new_job_dicts = get_new_jobs()
     
-    if not new_job_dicts:
-        logger.info("No new jobs to assign.")
-        exit()
-
-    # -- Batch add new jobs to docDB --
-    batch_add_jobs_to_docDB(new_job_dicts)
+    if new_job_dicts:
+        # -- Batch add new jobs to docDB --
+        batch_add_jobs_to_docDB(new_job_dicts)
+    else:
+        logger.info("No new jobs to add to docDB.")
     
-    # -- Trigger computation in the pipeline --
-    try:
-        n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
-    except:
-        n_workers = 10  # Default number of workers
-    assign_jobs(new_job_dicts, n_workers)
+    # -- Trigger all pending jobs from docDB in the downstream pipeline --        
+    pending_jobs = get_pending_jobs()  # Could be newly added jobs or existing pending jobs
+    if pending_jobs:
+        job_dicts = [job["job_dict"] for job in pending_jobs]
+        
+        try:
+            n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
+        except:
+            n_workers = 10  # Default number of workers
+            
+        assign_jobs(job_dicts, n_workers)
+    else:
+        logger.info("No pending jobs to assign.")
