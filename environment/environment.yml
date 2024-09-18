@@ -1,0 +1,26 @@
+environment_version: 1
+credentials:
+- type: general
+  id: irKqOC04LRPWaKVp
+  description: DOC_DB_PASSWORD
+  value: CUSTOM_KEY
+- type: general
+  id: Lmk8rAWX5EdLl3L0
+  description: DOC_DB_HOST
+  value: CUSTOM_KEY_2
+- type: general
+  id: KUIluZeSuzfew5sb
+  description: DOC_DB_USERNAME
+  value: CUSTOM_KEY_3
+- type: general
+  id: wBThnBgJUBzBRz45
+  description: DOC_DB_SSH_USERNAME
+  value: CUSTOM_KEY_4
+- type: general
+  id: W0GGw7qFed6TFTZK
+  description: DOC_DB_SSH_PASSWORD
+  value: CUSTOM_KEY_5
+- type: general
+  id: X3aaTa4J7ExWFj5g
+  description: DOC_DB_SSH_HOST
+  value: CUSTOM_KEY_6
