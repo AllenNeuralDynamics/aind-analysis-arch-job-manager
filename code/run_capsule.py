@@ -30,6 +30,7 @@ def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     return glob.glob(f"{nwb_root}/*.nwb")
 
 def get_all_analysis_specs():
+    # TODO: Get analysis specs from ForagerCollection
     analysis_specs = [
         {
             "analysis_name": "MLE fitting",
