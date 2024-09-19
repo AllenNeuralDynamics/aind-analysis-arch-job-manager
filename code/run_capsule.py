@@ -115,6 +115,7 @@ if __name__ == "__main__":
     # add the corresponding parameters
     parser.add_argument('--n_workers', dest='n_workers')
     parser.add_argument('--retry_failed', dest='retry_failed')
+    parser.add_argument('--retry_running', dest='retry_running')
     
     # return the data in the object and save in args
     args = parser.parse_args()
