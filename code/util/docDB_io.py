@@ -22,6 +22,11 @@ def get_pending_jobs(retry_failed, retry_running) -> list:
         pending_jobs = list(
             client.collection.find({"status": {"$regex": reg_ex}}, {"job_dict": 1, "_id": 0})
         )
+        # Update the status of those jobs to 'pending'
+        client.collection.update_many(
+            {"status": {"$regex": reg_ex}},  # Match the documents based on regex
+            {"$set": {"status": "pending"}}  # Set the 'status' field to 'pending'
+        )
     return pending_jobs
 
 def batch_get_new_jobs(job_dicts: list) -> list:
