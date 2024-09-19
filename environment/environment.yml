@@ -24,3 +24,9 @@ credentials:
   id: X3aaTa4J7ExWFj5g
   description: DOC_DB_SSH_HOST
   value: DOC_DB_SSH_HOST
+- type: aws
+  id: E2sUh7HEujEu9WqT
+  description: amazon
+  access_key_id: AWS_ACCESS_KEY_ID
+  secret_access_key: AWS_SECRET_ACCESS_KEY
+  region: AWS_DEFAULT_REGION
