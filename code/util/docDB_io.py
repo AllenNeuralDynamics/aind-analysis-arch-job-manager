@@ -7,11 +7,25 @@ credentials.collection = "job_manager"
 
 logger = logging.getLogger(__name__)
 
-def get_pending_jobs() -> list:
-    """Get all pending jobs from the database"""
+def get_pending_jobs(retry_failed, retry_running) -> list:
+    """Get all pending jobs from the database
+    """
+    reg_ex = "pending"
+    if retry_failed:
+        reg_ex += "|failed"
+    if retry_running:
+        reg_ex += "|running"
+    
+    print(reg_ex)
+
     with DocumentDbSSHClient(credentials) as client:
         pending_jobs = list(
-            client.collection.find({"status": "pending"}, {"job_dict": 1, "_id": 0})
+            client.collection.find({"status": {"$regex": reg_ex}}, {"job_dict": 1, "_id": 0})
+        )
+        # Update the status of those jobs to 'pending'
+        client.collection.update_many(
+            {"status": {"$regex": reg_ex}},  # Match the documents based on regex
+            {"$set": {"status": "pending"}}  # Set the 'status' field to 'pending'
         )
     return pending_jobs
 

@@ -30,6 +30,7 @@ logger.addHandler(logging.StreamHandler())
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     # Use glob to get all nwbs
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
+    logger.info(f"Find {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
 
 def get_all_analysis_specs():
@@ -44,7 +45,7 @@ def get_all_analysis_specs():
                 "agent_kwargs": {"win_stay_lose_switch": True, "choice_kernel": "none"},
                 "fit_kwargs": {
                     "DE_kwargs": {"polish": True, "seed": 42},
-                    "k_fold_cross_validation": 2,
+                    "k_fold_cross_validation": 10,
                 },
             },
         },
@@ -98,12 +99,29 @@ def assign_jobs(job_dicts, n_workers):
             ) as f:
                 json.dump(job_dict, f, indent=4)
     logger.info(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")
+    print(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")  # Print to the console for CO pipeline run
 
 def hash_dict(job_dict):
     return hashlib.sha256(job_dict.encode("utf-8")).hexdigest()
 
 
 if __name__ == "__main__":
+
+    # Parse input arguments
+    import argparse
+
+    # create a parser object
+    parser = argparse.ArgumentParser()
+    
+    # add the corresponding parameters
+    parser.add_argument('--n_workers', dest='n_workers')
+    parser.add_argument('--retry_failed', dest='retry_failed')
+    parser.add_argument('--retry_running', dest='retry_running')
+    
+    # return the data in the object and save in args
+    args = parser.parse_args()
+    print(args)
+
     # -- Get all new jobs --
     new_job_dicts = get_new_jobs()
     
@@ -114,15 +132,12 @@ if __name__ == "__main__":
         logger.info("No new jobs to add to docDB.")
     
     # -- Trigger all pending jobs from docDB in the downstream pipeline --        
-    pending_jobs = get_pending_jobs()  # Could be newly added jobs or existing pending jobs
+    pending_jobs = get_pending_jobs(
+        retry_failed=bool(int(args.retry_failed)),
+        retry_running=bool(int(args.retry_running)),
+        ) # Could be newly added jobs or existing jobs
     if pending_jobs:
-        job_dicts = [job["job_dict"] for job in pending_jobs]
-        
-        try:
-            n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
-        except:
-            n_workers = 10  # Default number of workers
-            
-        assign_jobs(job_dicts, n_workers)
+        job_dicts = [job["job_dict"] for job in pending_jobs]       
+        assign_jobs(job_dicts, n_workers=int(args.n_workers))
     else:
         logger.info("No pending jobs to assign.")

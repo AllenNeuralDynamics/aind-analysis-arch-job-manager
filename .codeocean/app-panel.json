@@ -1,15 +1,35 @@
 {
 	"version": 1,
+	"named_parameters": true,
 	"parameters": [
 		{
 			"id": "3PK2ZQcuj9Pfdy2E",
-			"name": "n_workers",
+			"name": "number of parallel capsules",
+			"param_name": "n_workers",
 			"description": "number of workers in CO pipeline run",
 			"type": "text",
 			"value_type": "integer",
 			"default_value": "10",
 			"minimum": 1,
 			"maximum": 100
+		},
+		{
+			"id": "2dx0fAzUxOQ5C6sy",
+			"name": "if retry failed jobs",
+			"param_name": "retry_failed",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "0",
+			"maximum": 1
+		},
+		{
+			"id": "PC9mUTNARcBt9AnQ",
+			"name": "if retry jobs that are running",
+			"param_name": "retry_running",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "0",
+			"maximum": 1
 		}
 	]
 }
