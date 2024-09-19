@@ -117,7 +117,6 @@ if __name__ == "__main__":
         job_dicts = [job["job_dict"] for job in pending_jobs]
         
         try:
-        
             n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
         except:
             n_workers = 10  # Default number of workers
