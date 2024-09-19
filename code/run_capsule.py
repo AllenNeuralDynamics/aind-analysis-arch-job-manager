@@ -9,6 +9,7 @@ import glob
 import logging
 import numpy as np
 import os
+import sys
 
 from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB, get_pending_jobs
 
@@ -116,6 +117,7 @@ if __name__ == "__main__":
         job_dicts = [job["job_dict"] for job in pending_jobs]
         
         try:
+        
             n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
         except:
             n_workers = 10  # Default number of workers
