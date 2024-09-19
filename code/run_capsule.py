@@ -99,7 +99,6 @@ def assign_jobs(job_dicts, n_workers):
             ) as f:
                 json.dump(job_dict, f, indent=4)
     logger.info(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")
-    print(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")  # Also print to CO pipeline run
 
 def hash_dict(job_dict):
     return hashlib.sha256(job_dict.encode("utf-8")).hexdigest()
@@ -137,13 +136,7 @@ if __name__ == "__main__":
         retry_running=bool(int(args.retry_running)),
         ) # Could be newly added jobs or existing jobs
     if pending_jobs:
-        job_dicts = [job["job_dict"] for job in pending_jobs]
-        
-        try:
-            n_workers = int(args.n_worker)  # Number of workers defined in the pipeline
-        except:
-            n_workers = 10  # Default number of workers
-            
-        assign_jobs(job_dicts, n_workers)
+        job_dicts = [job["job_dict"] for job in pending_jobs]       
+        assign_jobs(job_dicts, n_workers=int(args.n_workers))
     else:
         logger.info("No pending jobs to assign.")
