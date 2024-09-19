@@ -17,7 +17,7 @@ def get_pending_jobs(retry_failed) -> list:
 
     with DocumentDbSSHClient(credentials) as client:
         pending_jobs = list(
-            client.collection.find({"status": {"$regex": reg_ex}, {"job_dict": 1, "_id": 0})
+            client.collection.find({"status": {"$regex": reg_ex}}, {"job_dict": 1, "_id": 0})
         )
     return pending_jobs
 
