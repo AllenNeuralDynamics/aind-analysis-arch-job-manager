@@ -7,11 +7,17 @@ credentials.collection = "job_manager"
 
 logger = logging.getLogger(__name__)
 
-def get_pending_jobs() -> list:
-    """Get all pending jobs from the database"""
+def get_pending_jobs(retry_failed) -> list:
+    """Get all pending jobs from the database
+    """
+    if retry_failed:
+        reg_ex = "pending|failed"
+    else:
+        reg_ex = "pending"
+
     with DocumentDbSSHClient(credentials) as client:
         pending_jobs = list(
-            client.collection.find({"status": "pending"}, {"job_dict": 1, "_id": 0})
+            client.collection.find({"status": {"$regex": reg_ex}, {"job_dict": 1, "_id": 0})
         )
     return pending_jobs
 

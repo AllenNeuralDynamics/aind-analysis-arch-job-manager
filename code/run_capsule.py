@@ -105,6 +105,20 @@ def hash_dict(job_dict):
 
 
 if __name__ == "__main__":
+
+    # Parse input arguments
+    import argparse
+
+    # create a parser object
+    parser = argparse.ArgumentParser()
+    
+    # add the corresponding parameters
+    parser.add_argument('--n_workers', dest='n_workers')
+    parser.add_argument('--retry_failed', dest='retry_failed')
+    
+    # return the data in the object and save in args
+    args = parser.parse_args()
+
     # -- Get all new jobs --
     new_job_dicts = get_new_jobs()
     
@@ -115,12 +129,12 @@ if __name__ == "__main__":
         logger.info("No new jobs to add to docDB.")
     
     # -- Trigger all pending jobs from docDB in the downstream pipeline --        
-    pending_jobs = get_pending_jobs()  # Could be newly added jobs or existing pending jobs
+    pending_jobs = get_pending_jobs(retry_failed=args.retry_failed)  # Could be newly added jobs or existing pending jobs
     if pending_jobs:
         job_dicts = [job["job_dict"] for job in pending_jobs]
         
         try:
-            n_workers = int(sys.argv[1])  # Number of workers defined in the pipeline
+            n_workers = int(args.n_worker)  # Number of workers defined in the pipeline
         except:
             n_workers = 10  # Default number of workers
             
