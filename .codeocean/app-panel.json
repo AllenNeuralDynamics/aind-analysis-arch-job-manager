@@ -1,0 +1,15 @@
+{
+	"version": 1,
+	"parameters": [
+		{
+			"id": "3PK2ZQcuj9Pfdy2E",
+			"name": "n_workers",
+			"description": "number of workers in CO pipeline run",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "10",
+			"minimum": 1,
+			"maximum": 100
+		}
+	]
+}
