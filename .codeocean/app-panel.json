@@ -21,6 +21,15 @@
 			"value_type": "integer",
 			"default_value": "0",
 			"maximum": 1
+		},
+		{
+			"id": "PC9mUTNARcBt9AnQ",
+			"name": "if retry jobs that are running",
+			"param_name": "retry_running",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "0",
+			"maximum": 1
 		}
 	]
 }

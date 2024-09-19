@@ -118,6 +118,7 @@ if __name__ == "__main__":
     
     # return the data in the object and save in args
     args = parser.parse_args()
+    print(args)
 
     # -- Get all new jobs --
     new_job_dicts = get_new_jobs()
@@ -129,7 +130,10 @@ if __name__ == "__main__":
         logger.info("No new jobs to add to docDB.")
     
     # -- Trigger all pending jobs from docDB in the downstream pipeline --        
-    pending_jobs = get_pending_jobs(retry_failed=args.retry_failed)  # Could be newly added jobs or existing pending jobs
+    pending_jobs = get_pending_jobs(
+        retry_failed=bool(int(args.retry_failed)),
+        retry_running=bool(int(args.retry_running)),
+        ) # Could be newly added jobs or existing jobs
     if pending_jobs:
         job_dicts = [job["job_dict"] for job in pending_jobs]
         
