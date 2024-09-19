@@ -99,6 +99,7 @@ def assign_jobs(job_dicts, n_workers):
             ) as f:
                 json.dump(job_dict, f, indent=4)
     logger.info(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")
+    print(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")  # Also print to CO pipeline run
 
 def hash_dict(job_dict):
     return hashlib.sha256(job_dict.encode("utf-8")).hexdigest()
