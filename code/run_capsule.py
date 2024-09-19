@@ -13,14 +13,15 @@ import sys
 
 from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB, get_pending_jobs
 
-LOCAL_NWB_ROOT = "../data/foraging_nwb_bonsai"
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+LOCAL_NWB_ROOT = f"{SCRIPT_DIR}/../data/foraging_nwb_bonsai"
 
 logger = logging.getLogger()
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
     handlers=[
-        logging.FileHandler("../results/run_capsule.log"),
+        logging.FileHandler(f"{SCRIPT_DIR}/../results/run_capsule.log"),
         logging.StreamHandler(),
     ],
 )
@@ -28,7 +29,8 @@ logger.addHandler(logging.StreamHandler())
 
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     # Use glob to get all nwbs
-    return glob.glob(f"{nwb_root}/*.nwb")
+    nwbs = glob.glob(f"{nwb_root}/*.nwb")
+    return [os.path.basename(nwb) for nwb in nwbs]
 
 def get_all_analysis_specs():
     # TODO: Get analysis specs from ForagerCollection
@@ -89,13 +91,13 @@ def assign_jobs(job_dicts, n_workers):
     n_workers = np.min([n_workers, n_jobs])
     jobs_for_each_worker = np.array_split(job_dicts, n_workers)
     for n_worker, jobs_this in enumerate(jobs_for_each_worker):
-        os.makedirs(f"../results/{n_worker}", exist_ok=True)
+        os.makedirs(f"{SCRIPT_DIR}/../results/{n_worker}", exist_ok=True)
         for job_dict in jobs_this:
             with open(
-                f"../results/{n_worker}/{job_dict['job_hash']}.json", "w"
+                f"{SCRIPT_DIR}/../results/{n_worker}/{job_dict['job_hash']}.json", "w"
             ) as f:
                 json.dump(job_dict, f, indent=4)
-    logger.info(f"Assigned {n_jobs} jobs to {n_workers} workers.")
+    logger.info(f"Assigned pending {n_jobs} jobs to {n_workers} workers.")
 
 def hash_dict(job_dict):
     return hashlib.sha256(job_dict.encode("utf-8")).hexdigest()
