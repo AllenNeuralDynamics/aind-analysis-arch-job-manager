@@ -30,6 +30,7 @@ logger.addHandler(logging.StreamHandler())
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     # Use glob to get all nwbs
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
+    logger.info(f"Find {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
 
 def get_all_analysis_specs():
