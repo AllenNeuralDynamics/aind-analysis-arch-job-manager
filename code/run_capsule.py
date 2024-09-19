@@ -44,7 +44,7 @@ def get_all_analysis_specs():
                 "agent_kwargs": {"win_stay_lose_switch": True, "choice_kernel": "none"},
                 "fit_kwargs": {
                     "DE_kwargs": {"polish": True, "seed": 42},
-                    "k_fold_cross_validation": 2,
+                    "k_fold_cross_validation": 10,
                 },
             },
         },
