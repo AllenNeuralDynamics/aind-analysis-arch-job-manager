@@ -11,7 +11,7 @@
 			"value_type": "integer",
 			"default_value": "10",
 			"minimum": 1,
-			"maximum": 100
+			"maximum": 1000
 		},
 		{
 			"id": "2dx0fAzUxOQ5C6sy",
