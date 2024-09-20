@@ -37,6 +37,9 @@ def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
 
 def get_all_analysis_specs():
     """Define analysis specs"""
+
+    analysis_specs = []
+    
     """ previously added analyses
     # -- All MLE agents from aind-dynamic-foraging-models --
     df_all_agents = ForagerCollection().get_all_foragers()
