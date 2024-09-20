@@ -35,8 +35,9 @@ def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     logger.info(f"Find {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
 
-def get_all_analysis_specs_bak():
+def get_all_analysis_specs():
     """Define analysis specs"""
+    """ previously added analyses
     # -- All MLE agents from aind-dynamic-foraging-models --
     df_all_agents = ForagerCollection().get_all_foragers()
     analysis_specs = [
@@ -55,13 +56,12 @@ def get_all_analysis_specs_bak():
         }
         for agent_class, agent_kwargs in df_all_agents[["agent_class_name", "agent_kwargs"]].values
     ]
+    """
     
     # -- TODO: Add more analysis specs here --
     
     return analysis_specs
     
-def get_all_analysis_specs():
-    return []
 
 def get_new_jobs() -> list:
     """Based on all nwb files, analysis specs, and existing jobs, generate new jobs.
