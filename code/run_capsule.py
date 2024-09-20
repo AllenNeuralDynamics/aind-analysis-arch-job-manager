@@ -13,6 +13,8 @@ import sys
 
 from util.docDB_io import batch_get_new_jobs, batch_add_jobs_to_docDB, get_pending_jobs
 
+from aind_dynamic_foraging_models.generative_model import ForagerCollection
+
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 LOCAL_NWB_ROOT = f"{SCRIPT_DIR}/../data/foraging_nwb_bonsai"
 
@@ -34,22 +36,28 @@ def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     return [os.path.basename(nwb) for nwb in nwbs]
 
 def get_all_analysis_specs():
-    # TODO: Get analysis specs from ForagerCollection
+    """Define analysis specs"""
+    # -- All MLE agents from aind-dynamic-foraging-models --
+    df_all_agents = ForagerCollection().get_all_foragers()
     analysis_specs = [
         {
             "analysis_name": "MLE fitting",
             "analysis_ver": "first version @ 0.10.0",
             "analysis_libs_to_track_ver": ["aind_dynamic_foraging_models"],
             "analysis_args": {
-                "agent_class": "ForagerLossCounting",
-                "agent_kwargs": {"win_stay_lose_switch": True, "choice_kernel": "none"},
+                "agent_class": agent_class,
+                "agent_kwargs": agent_kwargs,
                 "fit_kwargs": {
                     "DE_kwargs": {"polish": True, "seed": 42},
                     "k_fold_cross_validation": 10,
                 },
             },
-        },
+        }
+        for agent_class, agent_kwargs in df_all_agents[["agent_class_name", "agent_kwargs"]].values
     ]
+    
+    # -- TODO: Add more analysis specs here --
+    
     return analysis_specs
 
 def get_new_jobs() -> list:
