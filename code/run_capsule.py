@@ -12,7 +12,9 @@ import os
 import sys
 from tqdm import tqdm
 
-from util.docDB_io import get_existing_job_hashes, batch_add_jobs_to_docDB, get_pending_jobs
+from util.docDB_io import (
+    get_existing_job_hashes_from_docDB, batch_add_jobs_to_docDB, get_pending_jobs
+)
 
 from aind_dynamic_foraging_models.generative_model import ForagerCollection
 
@@ -132,13 +134,16 @@ if __name__ == "__main__":
     # return the data in the object and save in args
     args = parser.parse_args()
     print(args)
+    
+    retry_failed = bool(int(args.retry_failed or "0"))
+    retry_running = bool(int(args.retry_running or "0"))
 
     # -- Upload new jobs to docDB --
     all_job_dicts = generate_all_jobs()  # All jobs
-    existing_job_hashes = get_existing_job_hashes()  # Existing jobs
+    existing_job_hashes = get_existing_job_hashes_from_docDB()  # Existing jobs
     new_job_dicts = [
         job for job in all_job_dicts if job["job_hash"] not in existing_job_hashes
-    ]  # New jobs
+    ]  # New jobs = all jobs - existing jobs on docDB
     n_skipped_jobs = len(all_job_dicts) - len(new_job_dicts)
 
     if new_job_dicts:
@@ -149,15 +154,15 @@ if __name__ == "__main__":
             f"{n_skipped_jobs} already existed. {'-'*20}"
         )
     else:
-        logger.info("No new jobs to add to docDB. {'-'*20}")
+        logger.info(f"No new jobs to add to docDB. {'-'*20}")
 
     # -- Trigger all pending jobs from docDB in the downstream pipeline --
     pending_jobs = get_pending_jobs(
-        retry_failed=bool(int(args.retry_failed or "0")),
-        retry_running=bool(int(args.retry_running or "0")),
+        retry_failed=retry_failed,
+        retry_running=retry_running,
         ) # Could be newly added jobs or existing jobs
     if pending_jobs:
         job_dicts = [job["job_dict"] for job in pending_jobs]       
         assign_jobs(job_dicts, n_workers=int(args.n_workers or "20"))
     else:
-        logger.info("No pending jobs to assign. {'-'*20}")
+        logger.info(f"No pending jobs to assign. {'-'*20}")

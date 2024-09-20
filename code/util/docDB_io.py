@@ -8,31 +8,8 @@ credentials.collection = "job_manager"
 
 logger = logging.getLogger(__name__)
 
-def get_pending_jobs(retry_failed, retry_running) -> list:
-    """Get all pending jobs from the database
-    """
-    reg_ex = "pending"
-    if retry_failed:
-        reg_ex += "|failed"
-    if retry_running:
-        reg_ex += "|running"
-    
-    print(reg_ex)
-    logger.info(f"Fetch {reg_ex} jobs from the database. {'-'*20}")
-    with DocumentDbSSHClient(credentials) as client:
-        pending_jobs = list(
-            client.collection.find({"status": {"$regex": reg_ex}}, {"job_dict": 1, "_id": 0})
-        )
-        # Update the status of those jobs to 'pending'
-        client.collection.update_many(
-            {"status": {"$regex": reg_ex}},  # Match the documents based on regex
-            {"$set": {"status": "pending"}}  # Set the 'status' field to 'pending'
-        )
-    logger.info("Fetch {reg_ex} jobs done! {len(pending_jobs)} found. {'-'*20}")
-    return pending_jobs
 
-
-def get_existing_job_hashes(batch_size=10000):
+def get_existing_job_hashes_from_docDB(batch_size=10000):
     """Retrieve all existing job hashes in batches."""
     existing_hashes = set()
     last_id = None
@@ -78,3 +55,31 @@ def batch_add_jobs_to_docDB(job_dicts):
         )
     logging.info(f"Done! {'-'*20}")
     return response
+
+
+def get_pending_jobs(retry_failed, retry_running) -> list:
+    """Get all pending jobs from the database
+    """
+    reg_ex = "pending"
+    if retry_failed:
+        reg_ex += "|failed"
+    if retry_running:
+        reg_ex += "|running"
+
+    print(reg_ex)
+    logger.info(f"Fetch {reg_ex} jobs from the database. {'-'*20}")
+    with DocumentDbSSHClient(credentials) as client:
+        cursor = client.collection.find(
+            {"status": {"$regex": reg_ex}}, {"job_dict": 1, "_id": 0}
+        ).batch_size(10000)
+        pending_jobs = []
+        for job in cursor:
+            pending_jobs.append(job['job_dict'])
+
+        # Update the status of those jobs to 'pending', if they are not already
+        client.collection.update_many(
+            {"status": {"$regex": reg_ex, "$ne": "pending"}}, 
+            {"$set": {"status": "pending"}}
+        )
+    logger.info(f"Fetch {reg_ex} jobs done! {len(pending_jobs)} found. {'-'*20}")
+    return pending_jobs
