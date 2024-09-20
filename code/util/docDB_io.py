@@ -17,7 +17,7 @@ def get_pending_jobs(retry_failed, retry_running) -> list:
         reg_ex += "|running"
     
     print(reg_ex)
-
+    logger.info(f"Fetch {reg_ex} jobs")
     with DocumentDbSSHClient(credentials) as client:
         pending_jobs = list(
             client.collection.find({"status": {"$regex": reg_ex}}, {"job_dict": 1, "_id": 0})
@@ -27,6 +27,7 @@ def get_pending_jobs(retry_failed, retry_running) -> list:
             {"status": {"$regex": reg_ex}},  # Match the documents based on regex
             {"$set": {"status": "pending"}}  # Set the 'status' field to 'pending'
         )
+    logger.info("Done!")
     return pending_jobs
 
 def batch_get_new_jobs(job_dicts: list) -> list:
@@ -34,12 +35,14 @@ def batch_get_new_jobs(job_dicts: list) -> list:
     """
     job_hashs = [job_dict["job_hash"] for job_dict in job_dicts]
 
+    logger.info("Fetch existing job hashs...")
     with DocumentDbSSHClient(credentials) as client:
         matched_records = client.collection.find(
             {"job_hash": {"$in": job_hashs}}, {"job_hash": 1, "_id": 0}
         )
         matched_job_hashs = [record["job_hash"] for record in matched_records]
-        
+    logger.info("Done!")
+
     return [
         job_dict for job_dict in job_dicts 
         if job_dict["job_hash"] not in matched_job_hashs
