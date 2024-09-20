@@ -102,7 +102,11 @@ def assign_jobs(job_dicts, n_workers):
     n_jobs = len(job_dicts)
     n_workers = np.min([n_workers, n_jobs])
     jobs_for_each_worker = np.array_split(job_dicts, n_workers)
-    for n_worker, jobs_this in tqdm(enumerate(jobs_for_each_worker), total=len(jobs_for_each_worker):
+    for n_worker, jobs_this in tqdm(
+        enumerate(jobs_for_each_worker), 
+        desc="Assigning jobs to workers",
+        total=len(jobs_for_each_worker)
+    ):
         os.makedirs(f"{SCRIPT_DIR}/../results/{n_worker}", exist_ok=True)
         for job_dict in jobs_this:
             with open(

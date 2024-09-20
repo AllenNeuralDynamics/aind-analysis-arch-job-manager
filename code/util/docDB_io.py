@@ -27,7 +27,7 @@ def get_pending_jobs(retry_failed, retry_running) -> list:
             {"status": {"$regex": reg_ex}},  # Match the documents based on regex
             {"$set": {"status": "pending"}}  # Set the 'status' field to 'pending'
         )
-    logger.info("Done!")
+    logger.info("Fetch {reg_ex} jobs done! {len(pending_jobs)} found.")
     return pending_jobs
 
 def batch_get_new_jobs(job_dicts: list) -> list:
@@ -41,7 +41,7 @@ def batch_get_new_jobs(job_dicts: list) -> list:
             {"job_hash": {"$in": job_hashs}}, {"job_hash": 1, "_id": 0}
         )
         matched_job_hashs = [record["job_hash"] for record in matched_records]
-    logger.info("Done!")
+    logger.info(f"Fetch existing job hashs done! {len(matched_job_hashs)} found.")
 
     return [
         job_dict for job_dict in job_dicts 
