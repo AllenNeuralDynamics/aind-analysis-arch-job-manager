@@ -13,7 +13,7 @@ import sys
 from tqdm import tqdm
 
 from util.docDB_io import (
-    get_existing_job_hashes_from_docDB, batch_add_jobs_to_docDB, get_pending_jobs
+    get_existing_job_hashes_from_docDB, batch_add_jobs_to_docDB, get_job_dicts_to_assign
 )
 
 from aind_dynamic_foraging_models.generative_model import ForagerCollection
@@ -157,12 +157,11 @@ if __name__ == "__main__":
         logger.info(f"No new jobs to add to docDB. {'-'*20}")
 
     # -- Trigger all pending jobs from docDB in the downstream pipeline --
-    pending_jobs = get_pending_jobs(
+    job_dicts_to_assign = get_job_dicts_to_assign(
         retry_failed=retry_failed,
         retry_running=retry_running,
         ) # Could be newly added jobs or existing jobs
-    if pending_jobs:
-        job_dicts = [job["job_dict"] for job in pending_jobs]       
-        assign_jobs(job_dicts, n_workers=int(args.n_workers or "20"))
+    if job_dicts_to_assign:
+        assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
     else:
         logger.info(f"No pending jobs to assign. {'-'*20}")
