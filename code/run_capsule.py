@@ -132,6 +132,7 @@ if __name__ == "__main__":
     parser.add_argument('--retry_failed', dest='retry_failed')
     parser.add_argument('--retry_running', dest='retry_running')
     parser.add_argument('--if_random_job_order', dest='if_random_job_order')
+    parser.add_argument('--debug_mode', dest='debug_mode')
 
     # return the data in the object and save in args
     args = parser.parse_args()
@@ -167,6 +168,8 @@ if __name__ == "__main__":
     if job_dicts_to_assign:
         if if_random_job_order:
             random.shuffle(job_dicts_to_assign)
+        if debug_mode:
+            job_dicts_to_assign = job_dicts_to_assign[:10]
         assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
     else:
         logger.info(f"No pending jobs to assign. {'-'*20}")

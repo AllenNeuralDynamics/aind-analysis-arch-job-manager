@@ -40,6 +40,15 @@
 			"value_type": "integer",
 			"default_value": "1",
 			"maximum": 1
+		},
+		{
+			"id": "aiHZFWmLsALJtPTA",
+			"name": "debug job assignment",
+			"param_name": "debug_mode",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "0",
+			"maximum": 1
 		}
 	]
 }
