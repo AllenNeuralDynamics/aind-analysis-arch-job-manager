@@ -43,12 +43,13 @@
 		},
 		{
 			"id": "aiHZFWmLsALJtPTA",
-			"name": "debug job assignment",
-			"param_name": "debug_mode",
+			"name": "max jobs",
+			"param_name": "max_jobs",
 			"type": "text",
 			"value_type": "integer",
-			"default_value": "0",
-			"maximum": 1
+			"default_value": "10000000000",
+			"minimum": 1,
+			"maximum": 10000000000
 		}
 	]
 }
