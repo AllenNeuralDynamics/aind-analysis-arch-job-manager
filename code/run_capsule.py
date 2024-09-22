@@ -168,7 +168,7 @@ if __name__ == "__main__":
     if job_dicts_to_assign:
         if if_random_job_order:
             random.shuffle(job_dicts_to_assign)
-        if debug_mode:
+        if int(args.debug_mode or "1"):
             job_dicts_to_assign = job_dicts_to_assign[:10]
         assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
     else:
