@@ -27,7 +27,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
     handlers=[
-        logging.FileHandler(f"{SCRIPT_DIR}/../results/0/run_capsule.log"),
+        #logging.FileHandler(f"{SCRIPT_DIR}/../results/run_capsule.log"),
         logging.StreamHandler(),
     ],
 )
