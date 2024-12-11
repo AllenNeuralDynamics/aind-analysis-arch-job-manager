@@ -11,7 +11,7 @@
 			"value_type": "integer",
 			"default_value": "10",
 			"minimum": 1,
-			"maximum": 100
+			"maximum": 1000
 		},
 		{
 			"id": "2dx0fAzUxOQ5C6sy",
@@ -30,6 +30,26 @@
 			"value_type": "integer",
 			"default_value": "0",
 			"maximum": 1
+		},
+		{
+			"id": "JGmvmRgQNTwjZaHp",
+			"name": "if assign jobs in a random order ",
+			"param_name": "if_random_job_order",
+			"description": "to balance workload of each worker",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "1",
+			"maximum": 1
+		},
+		{
+			"id": "aiHZFWmLsALJtPTA",
+			"name": "max jobs",
+			"param_name": "max_jobs",
+			"type": "text",
+			"value_type": "integer",
+			"default_value": "10000000000",
+			"minimum": 1,
+			"maximum": 10000000000
 		}
 	]
 }
