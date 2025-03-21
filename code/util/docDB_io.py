@@ -17,7 +17,7 @@ def get_existing_job_hashes_from_docDB():
         filter_query={},
         projection={"_id": 1},
         paginate=True,
-        paginate_batch_size=10000,   
+        paginate_batch_size=100000,   
     )
     existing_hashes = [record["_id"] for record in records]
     logger.info(f"Found {len(existing_hashes)} existing job hashes in docDB.")

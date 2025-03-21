@@ -147,9 +147,11 @@ if __name__ == "__main__":
     all_job_dicts = generate_all_jobs()  # All jobs
     existing_job_hashes = get_existing_job_hashes_from_docDB()  # Existing jobs
     
-    new_job_dicts = [
-        job for job in all_job_dicts if job["job_hash"] not in existing_job_hashes
-    ]  # New jobs = all jobs - existing jobs on docDB
+    all_job_hashes = [job["job_hash"] for job in all_job_dicts]  # All job hashes
+    
+    # Remove jobs that are already in docDB
+    new_job_hashes = list(set(all_job_hashes) - set(existing_job_hashes))
+    new_job_dicts = [job for job in all_job_dicts if job["job_hash"] in new_job_hashes]
     n_skipped_jobs = len(all_job_dicts) - len(new_job_dicts)
     
     if new_job_dicts:
@@ -160,8 +162,8 @@ if __name__ == "__main__":
         assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
         
         logger.info(
-            f"Added {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs; "
             f"{n_skipped_jobs} already existed. {'-'*20}"
+            f"Added {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs; "
         )
     else:
         logger.info(f"No new jobs to assign. {'-'*20}")
