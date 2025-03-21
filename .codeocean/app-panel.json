@@ -4,12 +4,12 @@
 	"parameters": [
 		{
 			"id": "3PK2ZQcuj9Pfdy2E",
-			"name": "number of parallel capsules",
+			"name": "max number of parallel capsules",
 			"param_name": "n_workers",
-			"description": "number of workers in CO pipeline run",
+			"description": "max number of workers in CO pipeline run",
 			"type": "text",
 			"value_type": "integer",
-			"default_value": "10",
+			"default_value": "50",
 			"minimum": 1,
 			"maximum": 1000
 		},
@@ -25,11 +25,11 @@
 		},
 		{
 			"id": "aiHZFWmLsALJtPTA",
-			"name": "max jobs",
+			"name": "max jobs for this run",
 			"param_name": "max_jobs",
 			"type": "text",
 			"value_type": "integer",
-			"default_value": "10000000000",
+			"default_value": "10000",
 			"minimum": 1,
 			"maximum": 10000000000
 		}
