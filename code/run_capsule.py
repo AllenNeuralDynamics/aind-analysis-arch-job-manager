@@ -162,8 +162,8 @@ if __name__ == "__main__":
         assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
         
         logger.info(
-            f"{n_skipped_jobs} already existed. {'-'*20}"
-            f"Added {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs; "
+            f"{n_skipped_jobs} already existed. {'-'*20}\n"
+            f"Added {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs"
         )
     else:
         logger.info(f"No new jobs to assign. {'-'*20}")
