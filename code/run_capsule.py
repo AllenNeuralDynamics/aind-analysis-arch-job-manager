@@ -137,8 +137,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
     
-    retry_failed = bool(int(args.retry_failed or "0"))
-    retry_running = bool(int(args.retry_running or "0"))
     if_random_job_order = bool(int(args.if_random_job_order or "1"))
 
     # -- Upload new jobs to docDB --
