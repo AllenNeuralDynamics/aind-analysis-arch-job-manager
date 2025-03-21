@@ -1,5 +1,5 @@
 metadata_version: 1
-name: han_debug_aind-analysis-arch-job-manager
+name: han_prod_aind-analysis-arch-job-manager
 description: Basic structure of a capsule to be customized as needed.
 authors:
 - name: AIND / Han Hou
