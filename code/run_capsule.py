@@ -130,8 +130,6 @@ if __name__ == "__main__":
 
     # add the corresponding parameters
     parser.add_argument('--n_workers', dest='n_workers')
-    parser.add_argument('--retry_failed', dest='retry_failed')
-    parser.add_argument('--retry_running', dest='retry_running')
     parser.add_argument('--if_random_job_order', dest='if_random_job_order')
     parser.add_argument('--max_jobs', dest='max_jobs')
 
