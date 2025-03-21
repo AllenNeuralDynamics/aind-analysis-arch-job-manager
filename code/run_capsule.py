@@ -13,9 +13,8 @@ import sys
 from tqdm import tqdm
 import random
 
-from util.docDB_io import (
-    get_existing_job_hashes_from_docDB, batch_add_jobs_to_docDB, get_job_dicts_to_assign
-)
+from util.docDB_io import get_existing_job_hashes_from_docDB
+
 
 from aind_dynamic_foraging_models.generative_model import ForagerCollection
 
@@ -131,8 +130,6 @@ if __name__ == "__main__":
 
     # add the corresponding parameters
     parser.add_argument('--n_workers', dest='n_workers')
-    parser.add_argument('--retry_failed', dest='retry_failed')
-    parser.add_argument('--retry_running', dest='retry_running')
     parser.add_argument('--if_random_job_order', dest='if_random_job_order')
     parser.add_argument('--max_jobs', dest='max_jobs')
 
@@ -140,38 +137,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
     
-    retry_failed = bool(int(args.retry_failed or "0"))
-    retry_running = bool(int(args.retry_running or "0"))
     if_random_job_order = bool(int(args.if_random_job_order or "1"))
 
     # -- Upload new jobs to docDB --
     all_job_dicts = generate_all_jobs()  # All jobs
     existing_job_hashes = get_existing_job_hashes_from_docDB()  # Existing jobs
-    new_job_dicts = [
-        job for job in all_job_dicts if job["job_hash"] not in existing_job_hashes
-    ]  # New jobs = all jobs - existing jobs on docDB
+    
+    all_job_hashes = [job["job_hash"] for job in all_job_dicts]  # All job hashes
+    
+    # Remove jobs that are already in docDB
+    new_job_hashes = list(set(all_job_hashes) - set(existing_job_hashes))
+    new_job_dicts = [job for job in all_job_dicts if job["job_hash"] in new_job_hashes]
     n_skipped_jobs = len(all_job_dicts) - len(new_job_dicts)
-
+    
     if new_job_dicts:
-        # -- Batch add new jobs to docDB --
-        batch_add_jobs_to_docDB(new_job_dicts)
+        if if_random_job_order:
+            random.shuffle(new_job_dicts)
+        
+        job_dicts_to_assign = new_job_dicts[:int(args.max_jobs or "10")]
+        assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
+        
         logger.info(
-            f"Added {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs; "
-            f"{n_skipped_jobs} already existed. {'-'*20}"
+            f"{n_skipped_jobs} already existed. {'-'*20}\n"
+            f"Added {len(new_job_dicts)} new jobs from all {len(all_job_dicts)} jobs"
         )
     else:
-        logger.info(f"No new jobs to add to docDB. {'-'*20}")
-
-    # -- Trigger all pending jobs from docDB in the downstream pipeline --
-    job_dicts_to_assign = get_job_dicts_to_assign(
-        retry_failed=retry_failed,
-        retry_running=retry_running,
-        ) # Could be newly added jobs or existing jobs
-    if job_dicts_to_assign:
-        if if_random_job_order:
-            random.shuffle(job_dicts_to_assign)
-        
-        job_dicts_to_assign = job_dicts_to_assign[:int(args.max_jobs or "10")]
-        assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
-    else:
-        logger.info(f"No pending jobs to assign. {'-'*20}")
+        logger.info(f"No new jobs to assign. {'-'*20}")
