@@ -56,9 +56,10 @@ def get_all_analysis_specs():
                 },
             },
         }
-        for agent_class, agent_kwargs, preset_name 
-        in df_all_agents[["agent_class_name", "agent_kwargs", "preset_name"]].values
-        if preset_name in ["Rescorla-Wagner", "Bari2019", "Hattori2019", "Win-Stay-Lose-Shift"]
+        for agent_class, agent_kwargs, preset_name, agent_alias
+        in df_all_agents[["agent_class_name", "agent_kwargs", "preset_name", "agent_alias"]].values
+        if (preset_name in ["Rescorla-Wagner", "Bari2019", "Hattori2019", "Win-Stay-Lose-Shift"])  # Common models in the literature
+        or (agent_alias in ["QLearning_L2F1_CKfull_softmax"])  # The model with the most parameters
     ]
     
     # -- TODO: Add more analysis specs here --
