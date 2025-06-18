@@ -129,10 +129,8 @@ def generate_all_jobs() -> list:
                 ]
             ),
         },
-        {  # Apply CompareToThreshold model only to sessions after 2024-07-01
-            "data": get_filtered_nwbs(
-                all_nwbs, df_master.query("session_date >= '2024-07-01'")
-            ),
+        {  # Apply CompareToThreshold model also to all sessions
+            "data": all_nwbs,
             "analysis": get_model_fitting_specs(
                 agent_alias_list=[
                     "ForagingCompareThreshold",  # CompareToThreshold model
