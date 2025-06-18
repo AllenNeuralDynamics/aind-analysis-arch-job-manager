@@ -9,6 +9,7 @@ import glob
 import logging
 import numpy as np
 import os
+import re
 import sys
 from tqdm import tqdm
 import random
@@ -17,6 +18,7 @@ from util.docDB_io import get_existing_job_hashes_from_docDB
 
 
 from aind_dynamic_foraging_models.generative_model import ForagerCollection
+from aind_analysis_arch_result_access.han_pipeline import get_session_table
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 LOCAL_NWB_ROOT = f"{SCRIPT_DIR}/../data/foraging_nwb_bonsai"
@@ -32,15 +34,59 @@ logging.basicConfig(
 )
 logger.addHandler(logging.StreamHandler())
 
+# Fetch the master session table from Han's pipeline
+df_master = get_session_table(if_load_bpod=False)
+
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     # Use glob to get all nwbs
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
     logger.info(f"Found {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
 
-def get_all_analysis_specs():
-    """Define analysis specs"""
-    # -- All MLE agents from aind-dynamic-foraging-models --
+def get_filtered_nwbs(all_nwbs, df_filtered):
+    """
+    Return a list of NWB files in `folder_path` that match the subject_id and session_date
+    in the filtered DataFrame.
+
+    Parameters:
+        all_nwbs (list): All available NWB files.
+        df_filtered (pd.DataFrame): Filtered DataFrame with at least 'subject_id' and 
+            'session_date' columns.
+
+    Returns:
+        List[str]: Full paths to matching NWB files.
+    """
+    logger.info(f"Filtering {len(all_nwbs)} NWBs based on {len(df_filtered)} sessions...")
+    # Create set of pattern strings like '788586_2025-06-16'
+    patterns = set(
+        f"{int(row.subject_id)}_{row.session_date.strftime('%Y-%m-%d')}"
+        for _, row in df_filtered[['subject_id', 'session_date']].dropna().iterrows()
+    )
+
+    # Precompiled regex for performance
+    pattern = re.compile(r"^(\d{6})_(\d{4}-\d{2}-\d{2})_")
+
+    # Filter in one pass
+    filtered_nwbs = [
+        f for f in all_nwbs
+        if (m := pattern.search(f)) and f"{m.group(1)}_{m.group(2)}" in patterns
+    ]
+    logger.info(f"Filtered down to {len(filtered_nwbs)} NWBs")
+    return filtered_nwbs
+
+
+def get_model_fitting_specs(agent_alias_list=None):
+    """Define model fitting specs for specific agents
+    
+    See https://foraging-behavior-browser.allenneuraldynamics-test.org/RL_model_playground
+    for available agent_aliases.
+    
+    Parameters:
+        agent_alias_list (list): List of agent aliases to filter the agents.
+            If None, all agents will be included.
+    Returns:
+        list: List of analysis specifications for model fitting.
+    """
     df_all_agents = ForagerCollection().get_all_foragers()
     analysis_specs = [
         {
@@ -56,39 +102,65 @@ def get_all_analysis_specs():
                 },
             },
         }
-        for agent_class, agent_kwargs, preset_name, agent_alias
-        in df_all_agents[["agent_class_name", "agent_kwargs", "preset_name", "agent_alias"]].values
-        if (preset_name in ["Rescorla-Wagner", "Bari2019", "Hattori2019", "Win-Stay-Lose-Shift"])  # Common models in the literature
-        or (agent_alias in ["QLearning_L2F1_CKfull_softmax"])  # The model with the most parameters
+        for agent_class, agent_kwargs, agent_alias
+        in df_all_agents[["agent_class_name", "agent_kwargs", "agent_alias"]].values
+        if (agent_alias in agent_alias_list) or (agent_alias_list is None)  # Filter by agent alias
     ]
-    
-    # -- TODO: Add more analysis specs here --
-    
+        
     logger.info(f"Found {len(analysis_specs)} analyses!")
     return analysis_specs
 
 
 def generate_all_jobs() -> list:
     """Generate all possible job dictionaries."""
-    nwbs = get_all_nwbs(LOCAL_NWB_ROOT)
-    analysis_specs = get_all_analysis_specs()
+
+    all_nwbs = get_all_nwbs(LOCAL_NWB_ROOT)
+
+    computation_matrix = [
+        {  # Apply all basic models to all sessions
+            "data": all_nwbs,
+            "analysis": get_model_fitting_specs(
+                agent_alias_list=[
+                    "QLearning_L1F0_epsi",  # Rescorla-Wagner
+                    "QLearning_L1F1_CK1_softmax",  # Bari2019
+                    "QLearning_L2F1_softmax",  # Hattori2019
+                    "WSLS",  # Win-Stay-Lose-Shift
+                    "QLearning_L2F1_CKfull_softmax",  # The model with the most parameters
+                ]
+            ),
+        },
+        {  # Apply CompareToThreshold model only to sessions after 2024-07-01
+            "data": get_filtered_nwbs(
+                all_nwbs, df_master.query("session_date >= '2024-07-01'")
+            ),
+            "analysis": get_model_fitting_specs(
+                agent_alias_list=[
+                    "ForagingCompareThreshold",  # CompareToThreshold model
+                ]
+            ),
+        },
+    ]
 
     all_job_dicts = []
 
     # Generate all job_dicts by combining nwb and analysis_spec
-    for nwb, analysis_spec in tqdm(
-        itertools.product(nwbs, analysis_specs),
-        desc="Generating all jobs",
-        total=len(nwbs) * len(analysis_specs),
+    for n_c, computation in enumerate(computation_matrix):
+        nwbs = computation["data"]
+        analysis_specs = computation["analysis"]
+
+        for nwb, analysis_spec in tqdm(
+            itertools.product(nwbs, analysis_specs),
+            desc=f"Generating jobs for computation {n_c + 1}/{len(computation_matrix)}",
+            total=len(nwbs) * len(analysis_specs),
         ):
-        job_dict = {
-            "nwb_name": nwb,
-            "analysis_spec": analysis_spec,
-        }
-        job_hash = hash_dict(json.dumps(job_dict))
-        job_dict["job_hash"] = job_hash  # Add hash to job_dict
-        all_job_dicts.append(job_dict)
-        
+            job_dict = {
+                "nwb_name": nwb,
+                "analysis_spec": analysis_spec,
+            }
+            job_hash = hash_dict(json.dumps(job_dict))
+            job_dict["job_hash"] = job_hash  # Add hash to job_dict
+            all_job_dicts.append(job_dict)
+
     logger.info(f"Generated {len(all_job_dicts)} total jobs. {'-'*20}")
     return all_job_dicts
 
