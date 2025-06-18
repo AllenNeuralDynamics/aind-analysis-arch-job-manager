@@ -17,6 +17,7 @@ from util.docDB_io import get_existing_job_hashes_from_docDB
 
 
 from aind_dynamic_foraging_models.generative_model import ForagerCollection
+from aind_analysis_arch_result_access.han_pipeline import get_session_table
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 LOCAL_NWB_ROOT = f"{SCRIPT_DIR}/../data/foraging_nwb_bonsai"
@@ -32,11 +33,42 @@ logging.basicConfig(
 )
 logger.addHandler(logging.StreamHandler())
 
+# Fetch the master session table from Han's pipeline
+df_master = get_session_table(if_load_bpod=False)
+
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     # Use glob to get all nwbs
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
     logger.info(f"Found {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
+
+def get_filtered_nwbs(all_nwbs, df_filtered):
+    """
+    Return a list of NWB files in `folder_path` that match the subject_id and session_date
+    in the filtered DataFrame.
+
+    Parameters:
+        all_nwbs (list): All available NWB files.
+        df_filtered (pd.DataFrame): Filtered DataFrame with at least 'subject_id' and 
+            'session_date' columns.
+
+    Returns:
+        List[str]: Full paths to matching NWB files.
+    """
+    # Create set of pattern strings like '788586_2025-06-16'
+    patterns = set(
+        f"{int(row.subject_id)}_{row.session_date.strftime('%Y-%m-%d')}"
+        for _, row in df_filtered[['subject_id', 'session_date']].dropna().iterrows()
+    )
+
+    # Match files that contain one of the patterns
+    filtered_nwbs = [
+        f for f in all_nwbs
+        if any(pat in f for pat in patterns)
+    ]
+
+    return filtered_nwbs
+
 
 def get_all_analysis_specs():
     """Define analysis specs"""
@@ -71,6 +103,10 @@ def get_all_analysis_specs():
 def generate_all_jobs() -> list:
     """Generate all possible job dictionaries."""
     nwbs = get_all_nwbs(LOCAL_NWB_ROOT)
+    
+    # Filter the master dataframe for sessions with dates after 2025-01-01
+    filtered_nwbs = get_filtered_nwbs(nwbs, df_master.query("session_date >= '2025-01-01'"))
+    
     analysis_specs = get_all_analysis_specs()
 
     all_job_dicts = []
