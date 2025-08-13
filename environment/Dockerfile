@@ -10,7 +10,7 @@ COPY git-askpass /
 
 RUN pip install --no-cache-dir \
     aind_data_access_api[docDB] \
-    aind-dynamic-foraging-models \
+    aind-dynamic-foraging-models==0.12.1 \
     aind-analysis-arch-result-access
 
 COPY postInstall /
