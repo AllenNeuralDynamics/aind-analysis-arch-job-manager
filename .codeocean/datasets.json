@@ -2,6 +2,10 @@
 	"version": 1,
 	"attached_datasets": [
 		{
+			"id": "6f64839a-c2f6-4162-a563-8ef2873eb1c9",
+			"mount": "extracted_Bowen_nwbs_20250922"
+		},
+		{
 			"id": "f908dd4d-d7ed-4d52-97cf-ccd0e167c659",
 			"mount": "foraging_nwb_bonsai"
 		}

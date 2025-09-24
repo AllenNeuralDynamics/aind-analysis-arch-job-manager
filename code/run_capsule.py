@@ -35,9 +35,15 @@ logging.basicConfig(
 logger.addHandler(logging.StreamHandler())
 
 # Fetch the master session table from Han's pipeline
-df_master = get_session_table(if_load_bpod=False)
+# df_master = get_session_table(if_load_bpod=False)
 
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
+    # Use glob to get all nwbs
+    nwbs = glob.glob(f"{nwb_root}/*.nwb")
+    logger.info(f"Found {len(nwbs)} nwbs")
+    return [os.path.basename(nwb) for nwb in nwbs]
+
+def get_all_nwbs_fix_Bowen(nwb_root=f"{SCRIPT_DIR}/../data/extracted_Bowen_nwbs_20250922/extracted_Bowen_nwbs"):
     # Use glob to get all nwbs
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
     logger.info(f"Found {len(nwbs)} nwbs")
@@ -114,7 +120,7 @@ def get_model_fitting_specs(agent_alias_list=None):
 def generate_all_jobs() -> list:
     """Generate all possible job dictionaries."""
 
-    all_nwbs = get_all_nwbs(LOCAL_NWB_ROOT)
+    all_nwbs = get_all_nwbs_fix_Bowen()
 
     computation_matrix = [
         {  # Apply all basic models to all sessions
@@ -225,8 +231,8 @@ if __name__ == "__main__":
         if if_random_job_order:
             random.shuffle(new_job_dicts)
         
-        job_dicts_to_assign = new_job_dicts[:int(args.max_jobs or "10")]
-        assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "20"))
+        job_dicts_to_assign = new_job_dicts[:int(args.max_jobs or "1000000")]
+        assign_jobs(job_dicts_to_assign, n_workers=int(args.n_workers or "1"))
         
         logger.info(
             f"{n_skipped_jobs} already existed. {'-'*20}\n"
