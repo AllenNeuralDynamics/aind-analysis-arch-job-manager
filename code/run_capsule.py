@@ -39,12 +39,14 @@ logger.addHandler(logging.StreamHandler())
 
 def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     # Use glob to get all nwbs
+    logger.info(f"Locating nwbs at {nwb_root}")
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
     logger.info(f"Found {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
 
 def get_all_nwbs_fix_Bowen(nwb_root=f"{SCRIPT_DIR}/../data/extracted_Bowen_nwbs_20250922/extracted_Bowen_nwbs"):
     # Use glob to get all nwbs
+    logger.info(f"Locating nwbs at {nwb_root}")
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
     logger.info(f"Found {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
