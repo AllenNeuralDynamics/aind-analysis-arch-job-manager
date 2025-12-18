@@ -44,7 +44,7 @@ def get_all_nwbs(nwb_root=LOCAL_NWB_ROOT):
     logger.info(f"Found {len(nwbs)} nwbs")
     return [os.path.basename(nwb) for nwb in nwbs]
 
-def get_all_nwbs_fix_Bowen(nwb_root=f"{SCRIPT_DIR}/../data/extracted_Bowen_nwbs_20250922/extracted_Bowen_nwbs"):
+def get_all_nwbs_fix_adhoc(nwb_root):
     # Use glob to get all nwbs
     logger.info(f"Locating nwbs at {nwb_root}")
     nwbs = glob.glob(f"{nwb_root}/*.nwb")
@@ -122,7 +122,7 @@ def get_model_fitting_specs(agent_alias_list=None):
 def generate_all_jobs() -> list:
     """Generate all possible job dictionaries."""
 
-    all_nwbs = get_all_nwbs_fix_Bowen()
+    all_nwbs = get_all_nwbs_fix_adhoc(nwb_root=f"{SCRIPT_DIR}/../data/adhoc_Xinxin_nwbs_20251207")
 
     computation_matrix = [
         {  # Apply all basic models to all sessions
