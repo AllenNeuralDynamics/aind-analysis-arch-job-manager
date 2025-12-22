@@ -5,7 +5,7 @@ from aind_data_access_api.document_db import MetadataDbClient
 analysis_docDB_dft = MetadataDbClient(
     host="api.allenneuraldynamics.org",
     database="analysis",
-    collection="dynamic-foraging-analysis",
+    collection="dynamic-foraging-model-fitting",
 )
 
 logger = logging.getLogger(__name__)
