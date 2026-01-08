@@ -126,7 +126,7 @@ def generate_all_jobs() -> list:
                     "QLearning_L2F1_softmax",  # Hattori2019
                     "WSLS",  # Win-Stay-Lose-Shift
                     "QLearning_L2F1_CKfull_softmax",  # The model with the most parameters
-                    "Qlearning_L1F1_CKfull_softmax",  # Bari2019 with CKfull; per discussion 
+                    "QLearning_L1F1_CKfull_softmax",  # Bari2019 with CKfull; per discussion 
                                                       # with Bowen and Xinxin @ 1/7/2026
                 ]
             ),
