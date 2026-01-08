@@ -138,7 +138,9 @@ def generate_all_jobs() -> list:
             ),
         },
         {  # Apply CompareToThreshold model also to all sessions
-            "data": all_nwbs,
+            "data": get_filtered_nwbs(
+                all_nwbs, df_master.query("session_date >= '2024-09-28'")
+            ),
             "analysis": get_model_fitting_specs(
                 agent_alias_list=[
                     "QLearning_L1F1_CKfull_softmax",  # Bari2019 with CKfull; per discussion 
