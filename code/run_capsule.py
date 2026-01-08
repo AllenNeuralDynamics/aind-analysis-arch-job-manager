@@ -75,7 +75,7 @@ def get_filtered_nwbs(all_nwbs, df_filtered):
     return filtered_nwbs
 
 
-def get_model_fitting_specs(agent_alias_list=None):
+def get_model_fitting_specs(agent_alias_list=None, k_fold_cross_validation=10):
     """Define model fitting specs for specific agents
     
     See https://foraging-behavior-browser.allenneuraldynamics-test.org/RL_model_playground
@@ -98,7 +98,7 @@ def get_model_fitting_specs(agent_alias_list=None):
                 "agent_kwargs": agent_kwargs,
                 "fit_kwargs": {
                     "DE_kwargs": {"polish": True, "seed": 42},
-                    "k_fold_cross_validation": 10,
+                    "k_fold_cross_validation": k_fold_cross_validation,
                 },
             },
         }
@@ -135,6 +135,18 @@ def generate_all_jobs() -> list:
                 agent_alias_list=[
                     "ForagingCompareThreshold",  # CompareToThreshold model
                 ]
+            ),
+        },
+        {  # Apply CompareToThreshold model also to all sessions
+            "data": get_filtered_nwbs(
+                all_nwbs, df_master.query("session_date >= '2024-09-28'")
+            ),
+            "analysis": get_model_fitting_specs(
+                agent_alias_list=[
+                    "QLearning_L1F1_CKfull_softmax",  # Bari2019 with CKfull; per discussion 
+                                                      # with Bowen and Xinxin @ 1/7/2026
+                ],
+                k_fold_cross_validation=None  # Skip within-session CV as it's problematic
             ),
         },
     ]
