@@ -145,6 +145,7 @@ def generate_all_jobs() -> list:
                 agent_alias_list=[
                     "QLearning_L1F1_CKfull_softmax",  # Bari2019 with CKfull; per discussion 
                                                       # with Bowen and Xinxin @ 1/7/2026
+                    "QLearning_L1F0_CKfull_softmax"
                 ],
                 k_fold_cross_validation=None  # Skip within-session CV as it's problematic
             ),
